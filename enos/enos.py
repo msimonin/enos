@@ -263,21 +263,24 @@ def init_os(env=None, **kwargs):
     # default network (one public / one provite)
     cmd.append('openstack network create public' \
             ' --share' \
-            ' --provider-physical-network physnet1' \
-            ' --provider-network-type flat' \
-            ' --external')
+            ' --provider-physical-network provider' \
+            ' --provider-network-type flat') 
+#            ' --external')
     cmd.append('openstack subnet create public-subnet' \
             ' --network public' \
             ' --subnet-range %s' \
-            ' --no-dhcp'
+#            ' --no-dhcp'
             ' --allocation-pool start=%s,end=%s' \
             ' --gateway %s' \
+            ' --dns-nameserver %s'\
             ' --ip-version 4' % (
                 env["provider_network"]['cidr'],
                 env["provider_network"]['start'],
                 env["provider_network"]['end'],
-                env["provider_network"]['gateway'])
+                env["provider_network"]['gateway'],
+                env["provider_network"]['dns'])
             )
+    """
     cmd.append('openstack network create private' \
             ' --provider-network-type vxlan')
 
@@ -294,7 +297,7 @@ def init_os(env=None, **kwargs):
     # NOTE(msimonin): not sure how to handle these 2 with openstack cli 
     cmd.append('neutron router-gateway-set router public')
     cmd.append('neutron router-interface-add router private-subnet')
-
+    """
     cmd = '\n'.join(cmd)
     print(cmd)
     call(cmd, shell = True)
