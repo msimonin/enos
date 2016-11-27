@@ -7,7 +7,7 @@ description:
 
 deployment:
   template: l2.hot
-  accommodation: [pair, double_room, density: 16, compute_nodes: 1]
+  accommodation: [pair, double_room, density: 15, compute_nodes: 1]
 
 execution:
   progression: linear
@@ -16,11 +16,14 @@ execution:
     title: Download
     class: flent
     method: tcp_download
+    time: 1200
   -
     title: Upload
     class: flent
     method: tcp_upload
+    time: 1200
   -
     title: Bi-directional
     class: flent
     method: tcp_bidirectional
+    time: 1200
