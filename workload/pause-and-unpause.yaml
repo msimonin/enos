@@ -1,0 +1,28 @@
+{% set image_name = image_name or "cirros.uec" %}
+{% set flavor_name = flavor_name or "m1.tiny" %}
+{% set sla_max_avg_duration = sla_max_avg_duration or 60 %}
+---
+  NovaServers.pause_and_unpause_server:
+    -
+      args:
+        flavor:
+            name: {{flavor_name}}
+        image:
+            name: {{image_name}}
+        force_delete: false
+      runner:
+        type: "constant"
+        times: {{times}}
+        concurrency: {{concurrency}}
+      context:
+        users:
+          tenants: 1
+          users_per_tenant: 1
+        quotas:
+          neutron:
+            network: -1
+            port: -1
+          nova:
+            instances: -1
+            cores: -1
+            ram: -1

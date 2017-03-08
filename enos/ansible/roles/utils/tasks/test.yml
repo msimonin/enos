@@ -34,10 +34,23 @@
   when: inventory_hostname == groups.all[0]
   with_items: "{{ groups.all }}"
 
+- name: Running flent (tcp_download)
+  shell: "flent tcp_download -l 5 -H {{ hostvars[item]['ansible_' + network_interface ]['ipv4']['address']   }} -f stats -o /tmp/tcp_download_{{ inventory_hostname }}_{{ item  }}.stats || true 2>/dev/null"
+  when: inventory_hostname == groups.all[0]
+  with_items: "{{ groups.all }}"
+
 - name: Fetching the results
   fetch:
     src: "/tmp/tcp_upload_{{ inventory_hostname }}_{{ item  }}.stats"
     dest: "{{ tc_output_dir }}/tcp_upload_{{ inventory_hostname }}_{{ item  }}.stats"
+    flat: yes
+  when: inventory_hostname == groups.all[0]
+  with_items: "{{ groups.all }}"
+
+- name: Fetching the results
+  fetch:
+    src: "/tmp/tcp_download_{{ inventory_hostname }}_{{ item  }}.stats"
+    dest: "{{ tc_output_dir }}/tcp_download_{{ inventory_hostname }}_{{ item  }}.stats"
     flat: yes
   when: inventory_hostname == groups.all[0]
   with_items: "{{ groups.all }}"
