@@ -3,19 +3,14 @@
 - name: Install rally result directory
   file: path=/root/rally_home state=directory owner=65500
 
-- name: Test whether the rally database has been initialized or not
-  stat: path=/root/rally_home/.rally.sqlite
-  register: sqlite
-
 - name: Initialize database
-  when: not sqlite.stat.exists
   docker_container:
     name: "{{ 'database' | to_uuid }}"
     image: rallyforge/rally
     state: started
     volumes:
     - /root/rally_home:/home/rally
-    command: rally-manage db create
+    command: rally-manage db recreate
 
 # NOTE(msimonin): without the pause
 # the file seems not to be synced in the next task.
@@ -67,7 +62,20 @@
   register: list
 
 # Download rally results only if there are some reports to get back
-
-- name: Generating rally reports
-  command: docker run -v /root/rally_home:/home/rally rallyforge/rally  rally task report --tasks {{ list.stdout | replace('\n', ' ') }} --out report.html
+# list.stdout is composed of only one uuid
+- name: Generating rally reports (html)
+  command: "docker run -v /root/rally_home:/home/rally rallyforge/rally  rally task report --tasks {{ list.stdout | replace('\n', ' ') }} --out rally-{{ bench.location | basename }}-{{ ansible_date_time.epoch }}.html"
   when: list.stdout != ""
+
+- name: Generating rally reports (json)
+  command: "docker run -v /root/rally_home:/home/rally rallyforge/rally rally task results --uuid {{ list.stdout | replace('\n', ' ') }}"
+  when: list.stdout != ""
+  register: json_output
+
+- name: Writing json to a file
+  copy:
+    content: "{{ json_output.stdout }}"
+    dest: /root/rally_home/rally-{{ bench.location | basename }}-{{ ansible_date_time.epoch }}.json
+  when: list.stdout != ""
+  
+    
