@@ -17,5 +17,8 @@ SSH_RETRIES = 100
 # Interval to wait in seconds between two retries
 SSH_RETRY_INTERVAL = 30
 
+# fake neutron external interface name
+FAKE_NEUTRON_EXTERNAL_INTERFACE = 'fake_interface'
+
 # ENOS Setup
 VERSION = '2.0.0'

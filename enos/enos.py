@@ -36,7 +36,7 @@ from utils.constants import (SYMLINK_NAME, ANSIBLE_DIR, NETWORK_IFACE,
 from utils.extra import (run_ansible, generate_inventory,
                          bootstrap_kolla, to_abs_path, pop_ip,
                          make_provider, mk_enos_values, wait_ssh,
-                         load_config)
+                         load_config, check_network, get_kolla_net)
 from utils.network_constraints import (build_grp_constraints,
                                        build_ip_constraints)
 from utils.enostask import (enostask, check_env)
@@ -125,16 +125,14 @@ def up(env=None, **kwargs):
     config = load_config(env['config'],
                          provider.topology_to_resources,
                          provider.default_config())
-    rsc, provider_net, eths = \
+    rsc, provider_nets = \
         provider.init(config, CALL_PATH, kwargs['--force-deploy'])
 
     env['rsc'] = rsc
-    env['provider_net'] = provider_net
-    env['eths'] = eths
+    env['provider_nets'] = provider_nets
 
     logging.debug("Provides ressources: %s", env['rsc'])
-    logging.debug("Provides network information: %s", env['provider_net'])
-    logging.debug("Provides network interfaces: %s", env['eths'])
+    logging.debug("Provides network information: %s", env['provider_nets'])
 
     # Generates inventory for ansible/kolla
     base_inventory = env['config']['inventory']
@@ -146,22 +144,27 @@ def up(env=None, **kwargs):
 
     wait_ssh(env)
 
+    check_network(env)
+    generate_inventory(env['rsc'], base_inventory, inventory)
+
+    # get the pool from which we can take ips
+    provider_net = get_kolla_net(env['provider_nets'], 'network_interface')
+
     # Set variables required by playbooks of the application
     if 'ip' in env['config']['registry']:
         registry_vip = env['config']['registry']['ip']
     else:
-        registry_vip = pop_ip(env)
+        registry_vip = pop_ip(provider_net)
 
     env['config'].update({
-        'vip':               pop_ip(env),
+        'vip':               pop_ip(provider_net),
         'registry_vip':      registry_vip,
-        'influx_vip':        pop_ip(env),
-        'grafana_vip':       pop_ip(env),
-        'network_interface': eths[NETWORK_IFACE],
+        'influx_vip':        pop_ip(provider_net),
+        'grafana_vip':       pop_ip(provider_net),
         'resultdir':         env['resultdir'],
         'rabbitmq_password': "demo",
         'database_password': "demo",
-        'external_vip':      pop_ip(env)
+        'external_vip':      pop_ip(provider_net)
     })
 
     # Runs playbook that initializes resources (eg,
@@ -270,7 +273,6 @@ def init_os(env=None, **kwargs):
                    " %(image_name)s" % {'image_name': image['name'], })
 
     # flavors name, ram, disk, vcpus
-
     flavors = [('m1.tiny', 512, 1, 1),
                ('m1.small', 2048, 20, 1),
                ('m1.medium', 4096, 40, 2),
@@ -308,20 +310,6 @@ def init_os(env=None, **kwargs):
                " --provider-network-type flat"
                " --external")
 
-    cmd.append("openstack subnet create public-subnet"
-               " --network public"
-               " --subnet-range %s"
-               " --no-dhcp"
-               " --allocation-pool start=%s,end=%s"
-               " --gateway %s"
-               " --dns-nameserver %s"
-               " --ip-version 4" % (
-                   env['provider_net']['cidr'],
-                   env['provider_net']['start'],
-                   env['provider_net']['end'],
-                   env['provider_net']['gateway'],
-                   env['provider_net']['dns']))
-
     cmd.append("openstack network create private"
                " --provider-network-type vxlan")
 
@@ -329,14 +317,30 @@ def init_os(env=None, **kwargs):
                " --network private"
                " --subnet-range 192.168.0.0/18"
                " --gateway 192.168.0.1"
-               " --dns-nameserver %s"
-               " --ip-version 4" % (env["provider_net"]['dns']))
+               " --dns-nameserver 8.8.8.8"
+               " --ip-version 4")
 
-    # create a router between this two networks
     cmd.append('openstack router create router')
-    # NOTE(msimonin): not sure how to handle these 2 with openstack cli
-    cmd.append('neutron router-gateway-set router public')
     cmd.append('neutron router-interface-add router private-subnet')
+
+    provider_net = get_kolla_net(env['provider_nets'],
+                                 'neutron_external_interface')
+    if provider_net is not None:
+        cmd.append("openstack subnet create public-subnet"
+                   " --network public"
+                   " --subnet-range %s"
+                   " --no-dhcp"
+                   " --allocation-pool start=%s,end=%s"
+                   " --gateway %s"
+                   " --dns-nameserver %s"
+                   " --ip-version 4" % (
+                       provider_net['cidr'],
+                       provider_net['start'],
+                       provider_net['end'],
+                       provider_net['gateway'],
+                       provider_net['dns']))
+
+        cmd.append('neutron router-gateway-set router public')
 
     cmd = '\n'.join(cmd)
 
