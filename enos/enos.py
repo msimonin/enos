@@ -31,8 +31,7 @@ See 'enos <command> --help' for more information on a specific
 command.
 
 """
-from utils.constants import (SYMLINK_NAME, ANSIBLE_DIR, NETWORK_IFACE,
-                             EXTERNAL_IFACE, VERSION)
+from utils.constants import (SYMLINK_NAME, ANSIBLE_DIR, VERSION)
 from utils.extra import (run_ansible, generate_inventory,
                          bootstrap_kolla, to_abs_path, pop_ip,
                          make_provider, mk_enos_values, wait_ssh,
@@ -531,8 +530,7 @@ def tc(env=None, **kwargs):
         # NOTE(msimonin): we retrieve eth name from the env instead
         # of env['config'] in case os hasn't been called
         options = {'action': 'test',
-                   'tc_output_dir': env['resultdir'],
-                   'network_interface': env['eths'][NETWORK_IFACE]}
+                   'tc_output_dir': env['resultdir']}
         run_ansible([utils_playbook], env['inventory'],
                 extra_vars=options)
         return
@@ -544,9 +542,7 @@ def tc(env=None, **kwargs):
     # NOTE(msimonin): we retrieve eth name from the env instead
     # of env['config'] in case os hasn't been called
     options = {'action': 'ips',
-               'ips_file': ips_file,
-               'network_interface': env['eths'][NETWORK_IFACE],
-               'neutron_external_interface': env['eths'][EXTERNAL_IFACE]}
+               'ips_file': ips_file}
     run_ansible([utils_playbook], env['inventory'], extra_vars=options)
 
     # 2.a building the group constraints
