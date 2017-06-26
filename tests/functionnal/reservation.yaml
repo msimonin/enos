@@ -1,0 +1,66 @@
+---
+
+# Resources description : this is provider specific
+resources:
+  control:
+    address: 127.0.0.1
+    alias: enos-node
+    user: travis
+    extra:
+      ansible_become: "yes"
+  network:
+    address: 127.0.0.1
+    alias: enos-node
+    user: travis
+    extra:
+      ansible_become: "yes"
+  compute:
+    address: 127.0.0.1
+    alias: enos-node
+    user: travis
+    extra:
+      ansible_become: "yes"
+
+# Provider description and its options
+provider:
+  type: static
+  networks:
+    - start: 172.17.0.100
+      end: 172.17.0.200
+      cidr: 172.17.0.0/16
+      gateway: 172.17.0.1
+      dns: 8.8.8.8
+
+# ############################################### #
+# Inventory to use                                #
+# ############################################### #
+
+# This will describe the topology of your services
+#inventory: /Users/msimonin/sed/discovery/openstack/enos-scenarios/myosprofiler/inventory
+inventory: inventories/inventory.sample
+
+# ############################################### #
+# docker registry parameters
+# ############################################### #
+registry:
+  ceph: False
+
+# ############################################### #
+# Monitoring stack parameters                     #
+# ############################################### #
+enable_monitoring: no
+
+# ############################################### #
+# Kolla parameters                                #
+# ############################################### #
+# Repository
+kolla_repo: "https://git.openstack.org/openstack/kolla-ansible"
+#kolla_repo: "file:///Users/msimonin/sed/discovery/openstack/kolla-ansible"
+kolla_ref: "stable/ocata"
+
+# Vars : globals.yml
+kolla:
+  kolla_base_distro: "centos"
+  kolla_install_type: "source"
+  docker_namespace: "beyondtheclouds"
+  enable_heat: "no"

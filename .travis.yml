@@ -1,6 +1,19 @@
-sudo: false
+sudo: enabled
+dist: trusty
 language: python
 python:
     - "2.7"
-install: pip install tox-travis
-script: tox
+install:
+  - pip install tox-travis
+  - pip install -r requirements.txt
+  # requirements for ansible apt module
+  - sudo apt-get install -y python-apt aptitude
+script:
+  #  - tox
+  - ip a
+  - ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+  - cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+  - rm ~/.ssh/known_hosts
+  - ls -al ~/.ssh
+  - python -m enos.enos up -f tests/functionnal/reservation.yaml -vv
+  - cat current/multinode
