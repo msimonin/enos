@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-
 set -xe
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 
 # common steps
-$SCRIPT_DIR/common_deps.sh
+$SCRIPT_DIR/../enos_deps.sh
+$SCRIPT_DIR/../vagrant_deps.sh
 
-cp $SCRIPT_DIR/topology.yaml reservation.yaml
+cd $SCRIPT_DIR
 
 virtualenv venv
 . venv/bin/activate
-pip install -r requirements.txt
+pip install -e ../../../..
 
-python -m enos.enos up &&\
-python -m enos.enos info &&\
-python -m enos.enos tc &&\
-python -m enos.enos tc --test
+enos up -f topology.yaml &&\
+enos info &&\
+enos tc &&\
+enos tc --test
 
 # TODO: get the results and check their correctness
 cat current/*.out &&\

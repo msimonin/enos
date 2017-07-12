@@ -12,9 +12,6 @@ wget http://download.virtualbox.org/virtualbox/5.1.22/virtualbox-5.1_5.1.22-1151
 dpkg -i vbox.deb || true
 apt-get -f -y  install
 
-# install enos dependencies
-apt-get install -y libffi-dev libssl-dev python-dev python-pip python-virtualenv
-
 # Get rid of size limitations on g5K
 dir=".vagrant.d"
 mkdir -p "/tmp/$dir"
