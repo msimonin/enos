@@ -340,6 +340,32 @@ def bootstrap_kolla(env):
     run_ansible([playbook], env['inventory'], extra_vars=enos_values)
 
 
+def post_install_kolla(env):
+    """Handles post installation.
+
+    - Fix single interface deployment.
+        In this case external network (br-ex) needs to be wired to the physical
+        interface. Note we detect the single interface deployment by looking
+        for an interface name containing the string veth.
+    """
+    logging.info("Post Install Kolla")
+    eths = env['eths']
+    veth = [eth for eth in eths if 'veth' in eth]
+    if len(veth) == 0:
+        return
+    logging.info("Deployment with a single interface detected")
+    globals_path = os.path.join(env['resultdir'], 'globals.yml')
+    globals_value = {}
+    with open(globals_path, 'r') as f:
+        globals_value = yaml.load(f)
+    playbook = os.path.join(ANSIBLE_DIR, 'post_install_kolla.yml')
+    globals_value.update({
+        "post_install_single_interface": True,
+        "interface_to_bridge": globals_value["network_interface"]
+    })
+    run_ansible([playbook], env['inventory'], extra_vars=globals_value)
+
+
 def expand_groups(grp):
     """Expand group names.
     e.g:

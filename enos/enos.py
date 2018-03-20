@@ -39,7 +39,7 @@ from utils.errors import EnosFilePathError
 from utils.extra import (run_ansible, generate_inventory,
                          bootstrap_kolla, pop_ip, make_provider,
                          mk_enos_values, wait_ssh, load_config,
-                         seekpath)
+                         seekpath, post_install)
 from utils.network_constraints import (build_grp_constraints,
                                        build_ip_constraints)
 from utils.enostask import (enostask, check_env)
@@ -206,6 +206,7 @@ def install_os(env=None, **kwargs):
     logging.info("Calling Kolla...")
     check_call(kolla_cmd)
 
+    post_install_kolla(env)
 
 @enostask("""
 usage: enos init [-e ENV|--env=ENV] [-s|--silent|-vv]
