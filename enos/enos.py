@@ -39,7 +39,7 @@ from utils.errors import EnosFilePathError
 from utils.extra import (run_ansible, generate_inventory,
                          bootstrap_kolla, pop_ip, make_provider,
                          mk_enos_values, wait_ssh, load_config,
-                         seekpath, post_install)
+                         seekpath, post_install_kolla)
 from utils.network_constraints import (build_grp_constraints,
                                        build_ip_constraints)
 from utils.enostask import (enostask, check_env)
