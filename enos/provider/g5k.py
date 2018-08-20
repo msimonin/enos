@@ -8,7 +8,8 @@ from enoslib.infra.enos_g5k import (api, provider)
 from enos.provider.provider import Provider
 from enos.utils.extra import gen_enoslib_roles
 from enos.utils.constants import (NETWORK_INTERFACE,
-                                  NEUTRON_EXTERNAL_INTERFACE)
+                                  NEUTRON_EXTERNAL_INTERFACE,
+                                  VIPS_POOL)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ DEFAULT_CONN_PARAMS = {'user': 'root'}
 PRIMARY_NETWORK = {
     "id": "int-net",
     "site": "rennes",
-    "type": "kavlan",
+    "type": "prod",
     "role": NETWORK_INTERFACE}
 
 SECONDARY_NETWORK = {
@@ -37,6 +38,12 @@ SECONDARY_NETWORK = {
     "site": "rennes",
     "type": "kavlan",
     "role": NEUTRON_EXTERNAL_INTERFACE}
+
+VIPS_POOL_NETWORK = {
+    "id": "vips_pool",
+    "site": "rennes",
+    "type": "slash_22",
+    "role": VIPS_POOL}
 
 
 def _count_common_interfaces(clusters):
@@ -99,7 +106,8 @@ def _build_enoslib_conf(config):
     site = sites.pop()
     PRIMARY_NETWORK["site"] = site
     SECONDARY_NETWORK["site"] = site
-    networks = [PRIMARY_NETWORK]
+    VIPS_POOL_NETWORK["site"] = site
+    networks = [PRIMARY_NETWORK, VIPS_POOL_NETWORK]
 
     # check minimum available number of interfaces in each cluster
     network_count = _count_common_interfaces(clusters)

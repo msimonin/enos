@@ -4,6 +4,7 @@ import unittest
 import mock
 
 from enos.provider.g5k import (_build_enoslib_conf, _count_common_interfaces, _get_sites)
+from enos.utils.constants import NETWORK_INTERFACE, NEUTRON_EXTERNAL_INTERFACE, VIPS_POOL
 
 PROVIDER = {'type': 'g5k',
             'job_name': 'enos-test'}
@@ -56,12 +57,18 @@ class TestGenEnoslibRoles(unittest.TestCase):
 
         networks = sorted(enoslib_conf['resources']['networks'],
                           key=operator.itemgetter('id'))
-        self.assertEquals(2, len(networks))
-        self.assertEquals('network_interface', networks[1]['role'])
-        self.assertEquals('neutron_external_interface', networks[0]['role'])
+        self.assertEquals(3, len(networks))
+        # id ext-net
+        self.assertEquals(NEUTRON_EXTERNAL_INTERFACE, networks[0]['role'])
+        # id int-net
+        self.assertEquals(NETWORK_INTERFACE, networks[1]['role'])
+        # id vips_pool
+        self.assertEquals(VIPS_POOL, networks[2]['role'])
 
-        self.assertEquals('site1', networks[1]['site'])
+
         self.assertEquals('site1', networks[0]['site'])
+        self.assertEquals('site1', networks[1]['site'])
+        self.assertEquals('site1', networks[2]['site'])
 
     @mock.patch("enos.provider.g5k._get_sites", return_value={"site1"})
     @mock.patch("enos.provider.g5k._count_common_interfaces", return_value=1)
@@ -88,9 +95,14 @@ class TestGenEnoslibRoles(unittest.TestCase):
 
         networks = sorted(enoslib_conf['resources']['networks'],
                           key=operator.itemgetter('id'))
-        self.assertEquals(1, len(networks))
-        self.assertEquals('network_interface', networks[0]['role'])
+        self.assertEquals(2, len(networks))
+        # id int-net
+        self.assertEquals(NETWORK_INTERFACE, networks[0]['role'])
+        # id vips_pool
+        self.assertEquals(VIPS_POOL, networks[1]['role'])
+
         self.assertEquals('site1', networks[0]['site'])
+        self.assertEquals('site1', networks[1]['site'])
 
     @mock.patch("enos.provider.g5k._get_sites", return_value={"site1"})
     @mock.patch("enos.provider.g5k._count_common_interfaces", return_value=2)
@@ -134,9 +146,10 @@ class TestGenEnoslibRoles(unittest.TestCase):
 
         networks = sorted(enoslib_conf['resources']['networks'],
                           key=operator.itemgetter('id'))
-        self.assertEquals(2, len(networks))
-        self.assertEquals('site1', networks[1]['site'])
+        self.assertEquals(3, len(networks))
         self.assertEquals('site1', networks[0]['site'])
+        self.assertEquals('site1', networks[1]['site'])
+        self.assertEquals('site1', networks[2]['site'])
 
     @mock.patch("enos.provider.g5k._get_sites", return_value={"site1"})
     @mock.patch("enos.provider.g5k._count_common_interfaces", return_value=1)

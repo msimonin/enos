@@ -44,5 +44,8 @@ NEUTRON_EXTERNAL_INTERFACE = 'neutron_external_interface'
 # In case we need to create a fake interface, this will be the nic name.
 FAKE_NEUTRON_EXTERNAL_INTERFACE = 'nei'
 
+# In case we need to create a fake interface, this will be the nic name.
+VIPS_POOL = 'vips_pool'
+
 # ENOS Setup
 VERSION = '4.1rc1'

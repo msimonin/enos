@@ -6,7 +6,7 @@ from .errors import (EnosProviderMissingConfigurationKeys,
 from .constants import (ENOS_PATH, ANSIBLE_DIR, VENV_KOLLA,
                         NEUTRON_EXTERNAL_INTERFACE,
                         FAKE_NEUTRON_EXTERNAL_INTERFACE, NETWORK_INTERFACE,
-                        API_INTERFACE)
+                        API_INTERFACE, VIPS_POOL)
 from netaddr import IPRange
 
 import logging
@@ -204,13 +204,15 @@ def get_vip_pool(networks):
     """Get the provider net where vip can be taken.
     In kolla-ansible this is the network with the api_interface role.
     In kolla-ansible api_interface defaults to network_interface.
+    In EnOS we can optionnaly pick the vips from the VIP_POOL pool (e.g subnet)
     """
-    provider_net = lookup_network(networks, [API_INTERFACE, NETWORK_INTERFACE])
+    provider_net = lookup_network(networks, [VIPS_POOL, API_INTERFACE,
+        NETWORK_INTERFACE])
     if provider_net:
         return provider_net
 
     msg = "You must declare %s" % " or ".join(
-        [API_INTERFACE, NETWORK_INTERFACE])
+        [VIPS_POOL, API_INTERFACE, NETWORK_INTERFACE])
     raise Exception(msg)
 
 
