@@ -59,7 +59,7 @@ def _build_enoslib_conf(config):
     for desc in _gen_enoslib_roles(resources):
 
         grps = expand_groups(desc["group"])
-        role = desc["role"]
+        role = desc.pop("role")
         for grp in grps:
             machine = {
                 "roles": [grp, role]
