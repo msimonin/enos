@@ -56,3 +56,5 @@ patches:
 grafana_docker_image: grafana/grafana:5.1.3
 influxdb_docker_image: influxdb:1.5.3
 cadvisor_docker_image: google/cadvisor:v0.30.0
+
+rally_container_image: beyondtheclouds/rally:fix-1800447
