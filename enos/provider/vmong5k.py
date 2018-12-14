@@ -49,7 +49,6 @@ def _build_enoslib_conf(config):
 
     # get a plain configuration of resources
     resources = conf.get("resources", {})
-
     for desc in gen_enoslib_roles(resources):
         groups = expand_groups(desc["group"])
         for group in groups:
@@ -60,8 +59,9 @@ def _build_enoslib_conf(config):
                        "flavour_desc": FLAVOURS.get(desc["flavor"],
                                                     DEFAULT_FLAVOUR)}
             machines.append(machine)
-
-    enoslib_conf.update(resources={"machines": machines})
+    networks = ["network_interface"]
+    enoslib_conf.update(resources={"machines": machines,
+                                   "networks": networks})
     return enoslib_conf
 
 
@@ -73,9 +73,9 @@ class Vmong5k(Provider):
         enoslib_conf = _build_enoslib_conf(config)
         conf = Configuration.from_dictionnary(enoslib_conf)
         logger.debug("Creating G5K provider")
-        g5k = provider.G5k(conf)
+        vmong5k = provider.VMonG5k(conf)
         logger.info("Initializing G5K provider")
-        roles, networks = g5k.init(force)
+        roles, networks = vmong5k.init(force)
         return roles, networks
 
 
